@@ -53,7 +53,7 @@ exports.interpret = (raw, logger) => {
             }
         }
     }
-    
+
     try {
         // assume it's KLE and try to convert it
         config = kle.convert(config, logger)

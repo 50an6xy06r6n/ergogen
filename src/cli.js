@@ -2,6 +2,7 @@
 
 const fs = require('fs-extra')
 const fsp = require('fs/promises')
+const jsdom = require('jsdom')
 const path = require('path')
 const yaml = require('js-yaml')
 const yargs = require('yargs')
@@ -32,6 +33,11 @@ const args = yargs
         default: false,
         describe: 'Clean output dir before parsing',
         type: 'boolean'
+    })
+    .option('svg', {
+        default: [],
+        describe: '.svg files containing outlines',
+        type: 'array'
     })
     .argv
 
@@ -120,11 +126,29 @@ try {
     process.exit(2)
 }
 
+// svg reading
+
+let svg_data = new Map()
+if (args.svg.length > 0) {
+    for (const file of args.svg) {
+        try {
+            let svg_file = fs.readFileSync(file).toString()
+            let dom = new jsdom.JSDOM(svg_file)
+            data = dom.window.document.querySelector('path').getAttribute('d')
+            name = file.substring(file.lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "")
+            svg_data.set(name, data)
+        } catch (err) {
+            console.error(`Could not read svg file "${args.svg}": ${err}`)
+            process.exit(2)
+        }
+    }
+}
+
 // processing
 
 let results
 try {
-    results = await ergogen.process(config_text, args.debug, s => console.log(s))
+    results = await ergogen.process(config_text, args.debug, svg_data, s => console.log(s))
 } catch (err) {
     console.error(err)
     process.exit(3)

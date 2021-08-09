@@ -1,3 +1,4 @@
+const m = require('makerjs')
 const u = require('./utils')
 const io = require('./io')
 const prepare = require('./prepare')
@@ -9,7 +10,7 @@ const pcbs_lib = require('./pcbs')
 
 const version = require('../package.json').version
 
-const process = async (raw, debug=false, logger=()=>{}) => {
+const process = async (raw, debug=false, svg_data='', logger=()=>{}) => {
 
     const prefix = 'Interpreting format: '
     let empty = true
@@ -22,7 +23,7 @@ const process = async (raw, debug=false, logger=()=>{}) => {
         debug = true
     }
     logger(prefix + suffix)
-    
+
     logger('Preprocessing input...')
     config = prepare.unnest(config)
     config = prepare.inherit(config)
@@ -61,7 +62,12 @@ const process = async (raw, debug=false, logger=()=>{}) => {
     }
 
     logger('Generating outlines...')
-    const outlines = outlines_lib.parse(config.outlines || {}, points, units)
+    var outlines = outlines_lib.parse(config.outlines || {}, points, units)
+    if (svg_data.size > 0) {
+        for (const [name, data] of svg_data) {
+            outlines[name] = m.importer.fromSVGPathData(data)
+        }
+    }
     results.outlines = {}
     for (const [name, outline] of Object.entries(outlines)) {
         if (!debug && name.startsWith('_')) continue
@@ -111,5 +117,5 @@ const inject = (type, name, value) => {
 module.exports = {
     version,
     process,
-    inject
+    inject,
 }
