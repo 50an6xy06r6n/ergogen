@@ -11,10 +11,12 @@ module.exports = {
     omron: require('./omron'),
     pad: require('./pad'),
     promicro: require('./promicro'),
+    promicro_rev_routed: require('./promicro_rev_routed'),
     rgb: require('./rgb'),
     rotary: require('./rotary'),
     scrollwheel: require('./scrollwheel'),
     slider: require('./slider'),
     trrs: require('./trrs'),
+    trrs_rev: require('./trrs_rev'),
     via: require('./via'),
 }
